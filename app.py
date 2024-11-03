@@ -8,7 +8,11 @@ task_id_counter = 1
 
 @app.route("/")
 def home():
-    return render_template("index.html", tasks=tasks.values())
+    return render_template("home.html", tasks=tasks.values())
+
+@app.route('/home', methods=['GET'])
+def home_page():
+    return render_template('home.html')
 
 @app.route("/add_task", methods=["POST"])
 def add_task():
