@@ -1,0 +1,31 @@
+# API Gateway
+- Make sure you have followed the Lambda documentation first
+- Open API Gateway and Choose Create API
+- Locate Rest API and choose Build
+- Choose New API and Name it
+- Leave API endpoint type as regional and click Create API
+- Choose Create Resource
+- Name resource callback and enable CORS and Create Resource
+- Choose Create Method
+- Method Type: Get
+- Integration Type: Lambda Function
+- Enable Lambda proxy integration
+- Choose your created lambda function from the drop down
+- Click Create method
+- On the left click Authorizers
+- Click Create New Authorizer
+- Name it so that you know it relates to your Cognito User Pool
+- Choose congito as the type
+- Select your task manager user pool
+- Type Authorization in Token source
+- Return to Resources
+- Click your get method under /callback
+- Click on method requests
+-  Under Authorization set the cognito authorization to what you just created
+- Click on your /callback method and click enable CORS
+- Enable both Gateway responses
+- Allow the GET Method in Access-Control-Allow-Methods
+- Save
+- Deploy your API
+- After deployment find your invoke URL
+- Update your Callback link in Cognito to this invoke URL and should look something like "https://your-api-id.execute-api.us-east-1.amazonaws.com/(Stage)/callback"
