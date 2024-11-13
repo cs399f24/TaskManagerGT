@@ -29,5 +29,5 @@
    - Click on your named user pool
    - Scroll down and over to "App Integration"
    - Scroll to the bottom of the page and under "App client list" click your "App client name"
-   - Click on "Edit" in Hosted UI and change url in "Allowed callback URLS" to your "https://<API Gateway Invoke URL>/<Stage name>/callback"
+   - Click on "Edit" in Hosted UI and change url in "Allowed callback URLS" to your "https://'API Gateway Invoke URL'/'Stage name'/callback"
    - Click Save Changes
