@@ -60,7 +60,7 @@ def lambda_handler(event, context):
         return {
             'statusCode': 302,
             'headers': {
-                'Location': f'(Enter Your original S3 Bucket index link but keep query after)?access_token={tokens["access_token"]}&id_token={tokens["id_token"]}&refresh_token={tokens["refresh_token"]}'  # Redirect with tokens
+                'Location': f'(Enter Your original S3 Bucket index link but keep query after)/task-manager.html?access_token={tokens["access_token"]}&id_token={tokens["id_token"]}&refresh_token={tokens["refresh_token"]}'  # Redirect with tokens
             }
         }
 
