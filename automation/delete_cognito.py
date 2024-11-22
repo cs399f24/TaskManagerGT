@@ -86,7 +86,8 @@ def delete_user_pool(user_pool_id):
 
 # Main execution
 if __name__ == "__main__":
-    pool_name = 'the_cafe'
+    # Replace 'your_pool_name' with the name of your user pool
+    pool_name = 'your_pool_name'
 
     # Look up resources
     user_pool_id = get_user_pool_id(pool_name)
@@ -103,3 +104,4 @@ if __name__ == "__main__":
         if domain_name:
             delete_hosted_ui_domain(user_pool_id, domain_name)
         delete_user_pool(user_pool_id)
+
