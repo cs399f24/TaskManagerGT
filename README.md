@@ -7,6 +7,8 @@ cd into repo
 
 activate venv
 
+//install requirements.txt
+
 // chmod +x create_all_scripts.sh
 
 // ./create_all_scripts.sh
