@@ -1,40 +1,38 @@
 #!/bin/bash
 
-# Define Lambda function name
-LAMBDA_FUNCTION_NAME="getUserTasks"
+# Set the path to the Python script in the automation folder
+LAMBDA_PYTHON_FILE="./automation/view_task_lambda.py"
 
-# Check if the function already exists
-if aws lambda get-function --function-name $LAMBDA_FUNCTION_NAME >/dev/null 2>&1; then
-    echo "Function '$LAMBDA_FUNCTION_NAME' already exists"
+# Check if view_task_lambda.py exists in the automation directory
+if [ ! -f "$LAMBDA_PYTHON_FILE" ]; then
+    echo "Error: view_task_lambda.py not found in automation directory!"
     exit 1
 fi
 
-# Define the IAM role that Lambda will use (Make sure the role exists with required permissions)
-ROLE="arn:aws:iam::YOUR_ACCOUNT_ID:role/lambda-execution-role"  # Replace with your actual role ARN
+# Make sure the function does not already exist
+if aws lambda get-function --function-name viewTaskFunction >/dev/null 2>&1; then
+    echo "Function already exists"
+    exit 1
+fi    
 
-# Lambda function source file
-LAMBDA_FILE="get_user_tasks_lambda.py"
+# Get the IAM role ARN (ensure the role exists)
+ROLE=$(aws iam get-role --role-name labRole --query "Role.Arn" --output text)
 
-# Lambda zip file name
-ZIP_FILE="get_user_tasks_lambda.zip"
+# Zip the view_task_lambda.py script
+zip view_task_lambda.zip "$LAMBDA_PYTHON_FILE"
 
-# Zip the Lambda function code
-zip $ZIP_FILE $LAMBDA_FILE
+# Create the View Task Lambda function
+aws lambda create-function --function-name viewTaskFunction \
+  --runtime python3.9 \
+  --role $ROLE \
+  --zip-file fileb://view_task_lambda.zip \
+  --handler view_task_lambda.lambda_handler
 
-# Create the Lambda function
-aws lambda create-function \
-    --function-name $LAMBDA_FUNCTION_NAME \
-    --runtime python3.9 \
-    --role $ROLE \
-    --zip-file fileb://$ZIP_FILE \
-    --handler get_user_tasks_lambda.lambda_handler \
-    --timeout 30 \
-    --memory-size 128
+# Wait for the function to be created and active (starts as "Pending")
+aws lambda wait function-active --function-name viewTaskFunction  
 
-# Wait for the function to be created and active
-aws lambda wait function-active --function-name $LAMBDA_FUNCTION_NAME
+# Publish a version of the function
+aws lambda publish-version --function-name viewTaskFunction
 
-# Publish a version of the Lambda function
-aws lambda publish-version --function-name $LAMBDA_FUNCTION_NAME
+echo "View Task Lambda function created and version published."
 
-echo "Lambda function '$LAMBDA_FUNCTION_NAME' has been successfully created and versioned."
