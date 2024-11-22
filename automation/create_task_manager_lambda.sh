@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the path to the Python script for the Lambda function
-LAMBDA_PYTHON_FILE="./taskManagerLambda.py"
+LAMBDA_PYTHON_FILE="./automation/taskManagerLambda.py"
 
 # Check if the Python file exists
 if [ ! -f "$LAMBDA_PYTHON_FILE" ]; then
