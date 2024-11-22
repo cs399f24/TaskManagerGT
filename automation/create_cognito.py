@@ -41,7 +41,7 @@ app_client_response = cognito_client.create_user_pool_client(
     AllowedOAuthFlows=['implicit'],  # Enable implicit grant
     AllowedOAuthScopes=['email', 'openid'],  # Scopes
     AllowedOAuthFlowsUserPoolClient=True,
-    CallbackURLs=['http://taskmanagergt.s3-website-us-east-1.amazonaws.com/task-manager.html'],
+    CallbackURLs=['https://taskmanagergt.s3-website-us-east-1.amazonaws.com/task-manager.html'],
     ExplicitAuthFlows=[
         'ALLOW_REFRESH_TOKEN_AUTH',
         'ALLOW_CUSTOM_AUTH',
@@ -56,7 +56,7 @@ print(f"Created App Client with ID: {app_client_id}")
 
 # Configure a domain for the hosted UI
 cognito_client.create_user_pool_domain(
-    Domain='authent',
+    Domain='task-auth-unique',
     UserPoolId=user_pool_id
 )
 print("Hosted UI domain configured")
