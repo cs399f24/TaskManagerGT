@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Set the path to the Python script for the Lambda function
-LAMBDA_PYTHON_FILE="./taskManagerLambdaFunction.py"
+LAMBDA_PYTHON_FILE="./taskManagerLambda.py"
 
 # Check if the Python file exists
 if [ ! -f "$LAMBDA_PYTHON_FILE" ]; then
-    echo "Error: taskManagerLambdaFunction.py not found!"
+    echo "Error: taskManagerLambda.py not found!"
     exit 1
 fi
 
@@ -29,10 +29,10 @@ zip task_manager_lambda.zip "$LAMBDA_PYTHON_FILE"
 ROLE_ARN=$(aws iam get-role --role-name $ROLE_NAME --query "Role.Arn" --output text)
 
 # Create the Lambda function
-aws lambda create-function --function-name taskManagerLambdaFunction \
+aws lambda create-function --function-name taskManagerLambda \
   --runtime python3.9 \
   --role $ROLE_ARN \
   --zip-file fileb://task_manager_lambda.zip \
-  --handler taskManagerLambdaFunction.lambda_handler
+  --handler taskManagerLambda.lambda_handler
 
-echo "Lambda function taskManagerLambdaFunction created successfully."
+echo "Lambda function taskManagerLambda created successfully."
