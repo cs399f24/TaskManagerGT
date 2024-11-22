@@ -1,6 +1,13 @@
 # TaskManagerGT
 Task manager for CSCI399
 
-chmod +x create_all_scripts.sh
-./create_all_scripts.sh
+clone repo
+
+cd into repo
+
+activate venv
+
+// chmod +x create_all_scripts.sh
+
+// ./create_all_scripts.sh
 
