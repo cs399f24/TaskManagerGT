@@ -5,6 +5,7 @@ chmod +x ./automation/create_dynamodb_table.sh
 chmod +x ./automation/create_add_tasks_lambda.sh
 chmod +x ./automation/create_delete_task_lambda.sh
 chmod +x ./automation/create_view_lambda.sh
+chmod +x ./automation/create_auth_function.sh
 
 # Execute each script
 echo "Running create_dynamodb_table.sh..."
@@ -43,4 +44,14 @@ else
     exit 1
 fi
 
+echo "Running create_auth_function.sh..."  # Added for auth_function creation
+./automation/create_auth_function.sh
+if [ $? -eq 0 ]; then
+    echo "Auth function creation ran successfully."
+else
+    echo "Error running create_auth_function.sh"
+    exit 1
+fi
+
 echo "All scripts ran successfully!"
+
