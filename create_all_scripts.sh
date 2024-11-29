@@ -1,50 +1,58 @@
 #!/bin/bash
 
-# Delete DynamoDB table
-echo "Deleting DynamoDB table..."
-aws dynamodb delete-table --table-name <DYNAMODB_TABLE_NAME>
+# Make scripts executable
+chmod +x ./automation/create_dynamodb_table.sh
+chmod +x ./automation/create_add_tasks_lambda.sh
+chmod +x ./automation/create_delete_task_lambda.sh
+chmod +x ./automation/create_view_lambda.sh
+chmod +x ./automation/create_task_manager_lambda.sh  
+
+# Execute each script
+echo "Running create_dynamodb_table.sh..."
+./automation/create_dynamodb_table.sh
 if [ $? -eq 0 ]; then
-    echo "DynamoDB table deleted successfully."
+    echo "DynamoDB table creation script ran successfully."
 else
-    echo "Error deleting DynamoDB table."
+    echo "Error running create_dynamodb_table.sh"
     exit 1
 fi
 
-# Delete Lambda functions
-echo "Deleting add tasks Lambda function..."
-aws lambda delete-function --function-name <ADD_TASKS_LAMBDA_NAME>
+echo "Running create_add_tasks_lambda.sh..."
+./automation/create_add_tasks_lambda.sh
 if [ $? -eq 0 ]; then
-    echo "Add tasks Lambda function deleted successfully."
+    echo "Add tasks Lambda function creation ran successfully."
 else
-    echo "Error deleting add tasks Lambda function."
+    echo "Error running create_add_tasks_lambda.sh"
     exit 1
 fi
 
-echo "Deleting delete task Lambda function..."
-aws lambda delete-function --function-name <DELETE_TASK_LAMBDA_NAME>
+echo "Running create_delete_task_lambda.sh..."
+./automation/create_delete_task_lambda.sh
 if [ $? -eq 0 ]; then
-    echo "Delete task Lambda function deleted successfully."
+    echo "Delete task Lambda function creation ran successfully."
 else
-    echo "Error deleting delete task Lambda function."
+    echo "Error running create_delete_task_lambda.sh"
     exit 1
 fi
 
-echo "Deleting view Lambda function..."
-aws lambda delete-function --function-name <VIEW_LAMBDA_NAME>
+echo "Running create_view_lambda.sh..."
+./automation/create_view_lambda.sh
 if [ $? -eq 0 ]; then
-    echo "View Lambda function deleted successfully."
+    echo "View Lambda function creation ran successfully."
 else
-    echo "Error deleting view Lambda function."
+    echo "Error running create_view_lambda.sh"
     exit 1
 fi
 
-echo "Deleting task manager Lambda function..."
-aws lambda delete-function --function-name <TASK_MANAGER_LAMBDA_NAME>
+echo "Running create_task_manager_lambda.sh..."  # New line for the task manager Lambda function creation
+./automation/create_task_manager_lambda.sh
 if [ $? -eq 0 ]; then
-    echo "Task Manager Lambda function deleted successfully."
+    echo "Task Manager Lambda function creation ran successfully."
 else
-    echo "Error deleting task manager Lambda function."
+    echo "Error running create_task_manager_lambda.sh"
     exit 1
 fi
 
-echo "Cleanup complete! All resources have been deleted."
+echo "All scripts ran successfully!"
+
+write a script to delete everything created in this script
