@@ -1,6 +1,7 @@
 import json
 import urllib.parse
 import urllib.request
+import os
 
 def lambda_handler(event, context):
     try:
@@ -19,8 +20,14 @@ def lambda_handler(event, context):
         # Cognito token URL
         token_url = "https://authent.auth.us-east-1.amazoncognito.com/oauth2/token"
 
-        # Set the client details
-        client_id = "4kommh5cddnogjvcru85m237c6" 
+        # Use environment variables for sensitive data like client_id
+        client_id = os.environ.get("COGNITO_CLIENT_ID")  # Set this in Lambda environment variables
+        if not client_id:
+            return {
+                'statusCode': 500,
+                'body': json.dumps({'message': 'Cognito client ID not set'}),
+                'headers': {'Content-Type': 'application/json'}
+            }
 
         # Set the payload for the token request
         payload = {
