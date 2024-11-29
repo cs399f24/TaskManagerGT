@@ -54,5 +54,3 @@ else
 fi
 
 echo "All scripts ran successfully!"
-
-write a script to delete everything created in this script
