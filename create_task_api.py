@@ -30,7 +30,7 @@ api_id = response["id"]
 resources = client.get_resources(restApiId=api_id)
 root_id = [resource for resource in resources["items"] if resource["path"] == "/"][0]["id"]
 
-# Create the 'tasks' resource
+# Create resources for tasks, create, delete, and auth
 tasks = client.create_resource(
     restApiId=api_id,
     parentId=root_id,
@@ -38,50 +38,6 @@ tasks = client.create_resource(
 )
 tasks_resource_id = tasks["id"]
 
-# Set up the GET method for retrieving tasks
-tasks_method = client.put_method(
-    restApiId=api_id,
-    resourceId=tasks_resource_id,
-    httpMethod='GET',
-    authorizationType='NONE'
-)
-
-tasks_response = client.put_method_response(
-    restApiId=api_id,
-    resourceId=tasks_resource_id,
-    httpMethod='GET',
-    statusCode='200',
-    responseParameters={
-        'method.response.header.Access-Control-Allow-Headers': True,
-        'method.response.header.Access-Control-Allow-Origin': True,
-        'method.response.header.Access-Control-Allow-Methods': True
-    },
-    responseModels={
-        'application/json': 'Empty'
-    }
-)
-
-# Get the ARN for the viewTaskFunction Lambda function
-lambda_client = boto3.client('lambda', region_name='us-east-1')
-lambda_arn = lambda_client.get_function(FunctionName='viewTaskFunction')['Configuration']['FunctionArn']
-uri = f'arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/{lambda_arn}/invocations'
-
-# Get the ARN for the IAM LabRole
-iam_client = boto3.client('iam')
-lab_role = iam_client.get_role(RoleName='LabRole')['Role']['Arn']
-
-# Set up the integration for the GET method to invoke the viewTaskFunction Lambda
-tasks_integration = client.put_integration(
-    restApiId=api_id,
-    resourceId=tasks_resource_id,
-    httpMethod='GET',
-    credentials=lab_role,
-    integrationHttpMethod='POST',
-    type='AWS_PROXY',
-    uri=uri
-)
-
-# Create the 'create' resource for adding tasks
 create_task = client.create_resource(
     restApiId=api_id,
     parentId=root_id,
@@ -89,45 +45,6 @@ create_task = client.create_resource(
 )
 create_task_resource_id = create_task["id"]
 
-# Set up the POST method for creating a new task
-create_task_method = client.put_method(
-    restApiId=api_id,
-    resourceId=create_task_resource_id,
-    httpMethod='POST',
-    authorizationType='NONE'
-)
-
-create_task_response = client.put_method_response(
-    restApiId=api_id,
-    resourceId=create_task_resource_id,
-    httpMethod='POST',
-    statusCode='200',
-    responseParameters={
-        'method.response.header.Access-Control-Allow-Headers': False,
-        'method.response.header.Access-Control-Allow-Origin': False,
-        'method.response.header.Access-Control-Allow-Methods': False
-    },
-    responseModels={
-        'application/json': 'Empty'
-    }
-)
-
-# Get the ARN for the addTaskFunction Lambda function
-lambda_arn = lambda_client.get_function(FunctionName='addTaskFunction')['Configuration']['FunctionArn']
-uri = f'arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/{lambda_arn}/invocations'
-
-# Set up the integration for the POST method to invoke the addTaskFunction Lambda
-create_task_integration = client.put_integration(
-    restApiId=api_id,
-    resourceId=create_task_resource_id,
-    httpMethod='POST',
-    credentials=lab_role,
-    integrationHttpMethod='POST',
-    type='AWS_PROXY',
-    uri=uri
-)
-
-# Create the 'delete' resource for deleting tasks
 delete_task = client.create_resource(
     restApiId=api_id,
     parentId=root_id,
@@ -135,75 +52,118 @@ delete_task = client.create_resource(
 )
 delete_task_resource_id = delete_task["id"]
 
-# Set up the DELETE method for deleting tasks
-delete_task_method = client.put_method(
+auth = client.create_resource(
+    restApiId=api_id,
+    parentId=root_id,
+    pathPart='auth'
+)
+auth_resource_id = auth["id"]
+
+# Lambda client
+lambda_client = boto3.client('lambda', region_name='us-east-1')
+
+# IAM client for LabRole ARN
+iam_client = boto3.client('iam')
+lab_role = iam_client.get_role(RoleName='LabRole')['Role']['Arn']
+
+# ----- Set up integrations for tasks -----
+view_task_lambda_arn = lambda_client.get_function(FunctionName='viewTaskFunction')['Configuration']['FunctionArn']
+view_task_uri = f'arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/{view_task_lambda_arn}/invocations'
+
+client.put_method(
+    restApiId=api_id,
+    resourceId=tasks_resource_id,
+    httpMethod='GET',
+    authorizationType='NONE'
+)
+
+client.put_integration(
+    restApiId=api_id,
+    resourceId=tasks_resource_id,
+    httpMethod='GET',
+    credentials=lab_role,
+    integrationHttpMethod='POST',
+    type='AWS_PROXY',
+    uri=view_task_uri
+)
+
+# ----- Set up integration for creating tasks -----
+add_task_lambda_arn = lambda_client.get_function(FunctionName='addTaskFunction')['Configuration']['FunctionArn']
+add_task_uri = f'arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/{add_task_lambda_arn}/invocations'
+
+client.put_method(
+    restApiId=api_id,
+    resourceId=create_task_resource_id,
+    httpMethod='POST',
+    authorizationType='NONE'
+)
+
+client.put_integration(
+    restApiId=api_id,
+    resourceId=create_task_resource_id,
+    httpMethod='POST',
+    credentials=lab_role,
+    integrationHttpMethod='POST',
+    type='AWS_PROXY',
+    uri=add_task_uri
+)
+
+# ----- Set up integration for deleting tasks -----
+delete_task_lambda_arn = lambda_client.get_function(FunctionName='deleteTaskFunction')['Configuration']['FunctionArn']
+delete_task_uri = f'arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/{delete_task_lambda_arn}/invocations'
+
+client.put_method(
     restApiId=api_id,
     resourceId=delete_task_resource_id,
     httpMethod='DELETE',
     authorizationType='NONE'
 )
 
-delete_task_response = client.put_method_response(
-    restApiId=api_id,
-    resourceId=delete_task_resource_id,
-    httpMethod='DELETE',
-    statusCode='200',
-    responseParameters={
-        'method.response.header.Access-Control-Allow-Headers': False,
-        'method.response.header.Access-Control-Allow-Origin': False,
-        'method.response.header.Access-Control-Allow-Methods': False
-    },
-    responseModels={
-        'application/json': 'Empty'
-    }
-)
-
-# Get the ARN for the deleteTaskFunction Lambda function
-lambda_arn = lambda_client.get_function(FunctionName='deleteTaskFunction')['Configuration']['FunctionArn']
-uri = f'arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/{lambda_arn}/invocations'
-
-# Set up the integration for the DELETE method to invoke the deleteTaskFunction Lambda
-delete_task_integration = client.put_integration(
+client.put_integration(
     restApiId=api_id,
     resourceId=delete_task_resource_id,
     httpMethod='DELETE',
     credentials=lab_role,
     integrationHttpMethod='POST',
     type='AWS_PROXY',
-    uri=uri
+    uri=delete_task_uri
 )
 
-# Set up the OPTIONS method for CORS
-for method in ['GET', 'POST', 'DELETE']:
-    resource_id = None
-    if method == 'GET':
-        resource_id = tasks_resource_id
-    elif method == 'POST':
-        resource_id = create_task_resource_id
-    elif method == 'DELETE':
-        resource_id = delete_task_resource_id
+# ----- Set up integration for auth -----
+auth_function_arn = lambda_client.get_function(FunctionName='authFunction')['Configuration']['FunctionArn']
+auth_uri = f'arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/{auth_function_arn}/invocations'
 
-    # Set up the OPTIONS method for CORS support
+client.put_method(
+    restApiId=api_id,
+    resourceId=auth_resource_id,
+    httpMethod='POST',
+    authorizationType='NONE'
+)
+
+client.put_integration(
+    restApiId=api_id,
+    resourceId=auth_resource_id,
+    httpMethod='POST',
+    credentials=lab_role,
+    integrationHttpMethod='POST',
+    type='AWS_PROXY',
+    uri=auth_uri
+)
+
+# ----- Set up OPTIONS methods for CORS -----
+resources = {
+    'GET': tasks_resource_id,
+    'POST': create_task_resource_id,
+    'DELETE': delete_task_resource_id,
+    'AUTH': auth_resource_id
+}
+
+for method, resource_id in resources.items():
     client.put_method(
         restApiId=api_id,
         resourceId=resource_id,
         httpMethod='OPTIONS',
         authorizationType='NONE'
-    )
-
-    client.put_method_response(
-        restApiId=api_id,
-        resourceId=resource_id,
-        httpMethod='OPTIONS',
-        statusCode='200',
-        responseParameters={
-            'method.response.header.Access-Control-Allow-Headers': False,
-            'method.response.header.Access-Control-Allow-Origin': False,
-            'method.response.header.Access-Control-Allow-Methods': False
-        },
-        responseModels={
-            'application/json': 'Empty'
-        }
     )
 
     client.put_integration(

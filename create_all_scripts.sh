@@ -6,6 +6,7 @@ chmod +x ./automation/create_add_tasks_lambda.sh
 chmod +x ./automation/create_delete_task_lambda.sh
 chmod +x ./automation/create_view_lambda.sh
 chmod +x ./automation/create_auth_function.sh
+chmod +x ./automation/create_cognito.sh  
 
 # Execute each script
 echo "Running create_dynamodb_table.sh..."
@@ -44,23 +45,23 @@ else
     exit 1
 fi
 
-<<<<<<< HEAD
-echo "Running create_auth_function.sh..."  # Added for auth_function creation
+echo "Running create_auth_function.sh..."
 ./automation/create_auth_function.sh
 if [ $? -eq 0 ]; then
     echo "Auth function creation ran successfully."
 else
     echo "Error running create_auth_function.sh"
-=======
-echo "Running create_task_manager_lambda.sh..."  # New line for the task manager Lambda function creation
-./automation/create_task_manager_lambda.sh
+    exit 1
+fi
+
+# Running the create_cognito.sh script
+echo "Running create_cognito.sh..."  # Added for Cognito creation
+./automation/create_cognito.sh
 if [ $? -eq 0 ]; then
-    echo "Task Manager Lambda function creation ran successfully."
+    echo "Cognito creation script ran successfully."
 else
-    echo "Error running create_task_manager_lambda.sh"
->>>>>>> 0fa4fa9d02a85c9eb0f019cb09c4089a90cced91
+    echo "Error running create_cognito.sh"
     exit 1
 fi
 
 echo "All scripts ran successfully!"
-
