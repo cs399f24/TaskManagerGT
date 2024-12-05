@@ -5,246 +5,243 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task Manager</title>
     <style>
-        /* Basic styling for the task manager */
+      
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
             background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
-
         .container {
-            width: 80%;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
+            background-color: white;
+            padding: 1em;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
         }
-
         h1 {
             text-align: center;
+            margin-bottom: 1em;
         }
-
         .task-list {
-            margin-top: 20px;
+            list-style-type: none;
+            padding: 0;
         }
-
-        .task {
-            padding: 10px;
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-            margin-bottom: 10px;
+        .task-item {
+            padding: 8px;
+            background-color: #fafafa;
+            margin: 5px 0;
             border-radius: 5px;
-            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-
-        .task button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: red;
+        .delete-btn {
+            background-color: #ff4d4d;
             color: white;
             border: none;
             padding: 5px;
+            border-radius: 5px;
             cursor: pointer;
         }
-
-        form {
-            margin-top: 20px;
+        .delete-btn:hover {
+            background-color: #cc0000;
         }
-
-        label {
-            font-weight: bold;
-        }
-
-        input, textarea {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        button {
-            padding: 10px 20px;
-            background-color: #007BFF;
-            color: #fff;
+        .add-task-btn {
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
             border: none;
-            border-radius: 5px;
+            width: 100%;
+            margin-top: 1em;
             cursor: pointer;
+            border-radius: 5px;
         }
-
-        button:hover {
+        .add-task-btn:hover {
             background-color: #0056b3;
         }
-
-        .alert {
-            color: red;
-            font-size: 14px;
+        .logout-btn {
+            padding: 10px;
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            width: 100%;
+            margin-top: 1em;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .logout-btn:hover {
+            background-color: #c82333;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Task Manager</h1>
-
-        <!-- Display tasks here -->
-        <div id="task-list" class="task-list">
-            <h2>Your Tasks</h2>
-        </div>
-
-        <form id="task-form">
-            <label for="title">Task Name:</label>
-            <input type="text" id="title" name="title" required>
-
-            <label for="description">Description:</label>
-            <textarea id="description" name="description"></textarea>
-
-            <button type="submit">Add Task</button>
-        </form>
-
-        <div id="alert-message" class="alert" style="display: none;"></div>
-        
-        <!-- Optional Logout Button -->
-        <button onclick="logout()">Log Out</button>
+        <h1>Your Tasks</h1>
+        <ul id="task-list" class="task-list"></ul>
+        <!-- Add Task Button -->
+        <button id="add-task-btn" class="add-task-btn">Add Task</button>
+        <!-- Logout Button -->
+        <button id="logout-btn" class="logout-btn">Logout</button>
     </div>
 
     <script>
-        // Parse URL parameters and store tokens in localStorage
-        const parseUrlParams = () => {
+        document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
-            const accessToken = urlParams.get('access_token');
-            const idToken = urlParams.get('id_token');
-            const refreshToken = urlParams.get('refresh_token');
+            const authCode = urlParams.get('code');
 
-            if (accessToken) {
-                localStorage.setItem('access_token', accessToken);
+            if (!authCode) {
+                alert('Authentication required. Redirecting to login...');
+                
+                // Replace with your Cognito Hosted UI login URL
+                window.location.href = 'YOUR_COGNITO_HOSTED_UI_URL';
+                return;
             }
-            if (idToken) {
-                localStorage.setItem('id_token', idToken);
-            }
-            if (refreshToken) {
-                localStorage.setItem('refresh_token', refreshToken);
-            }
-        };
 
-        // Call the function to store the tokens when the page loads
-        parseUrlParams();
-
-        // Check if the user is authenticated by looking for tokens in localStorage
-        const accessToken = localStorage.getItem('access_token');
-        if (!accessToken) {
-            alert("You must be logged in to view your tasks.");
-            window.location.href = 'index.html';  // Redirect to login page if no token
-        }
-
-        const apiUrl = '(Invoke API URL/stage)';  // Update with your API Gateway URL
-
-        // Fetch user tasks from API Gateway (use token for authentication)
-        const getUserTasks = async () => {
-            try {
-                const response = await fetch(`${apiUrl}/tasks`, {
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                });
-
-                if (!response.ok) {
-                    throw new Error("Failed to fetch tasks");
-                }
-
-                const data = await response.json();
-                const tasks = data.tasks || [];
-                const taskList = document.getElementById('task-list');
-
-                taskList.innerHTML = '<h2>Your Tasks</h2>';  // Reset task list
-                if (tasks.length > 0) {
-                    tasks.forEach(task => {
-                        const taskElement = document.createElement('div');
-                        taskElement.classList.add('task');
-                        taskElement.innerHTML = `
-                            <strong>${task.task_name}</strong><br>
-                            <span>${task.created_at}</span><br>
-                            <button onclick="deleteTask('${task.task_id}')">Delete</button>
-                        `;
-                        taskList.appendChild(taskElement);
+            async function fetchAccessToken(authCode) {
+                try {
+                    const response = await fetch('YOUR_COGNITO_TOKEN_URL', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({
+                            code: authCode,
+                            redirect_uri: 'YOUR_REDIRECT_URI',
+                            client_id: 'YOUR_CLIENT_ID',
+                            grant_type: 'authorization_code',
+                        }),
                     });
-                } else {
-                    taskList.innerHTML = "<p>No tasks found.</p>";
-                }
-            } catch (error) {
-                showAlert("Error loading tasks.");
-            }
-        };
 
-        // Show error or success message
-        const showAlert = (message) => {
-            const alertElement = document.getElementById('alert-message');
-            alertElement.textContent = message;
-            alertElement.style.display = 'block';
-        };
-
-        // Call the function to load tasks when the page loads
-        getUserTasks();
-
-        // Handle task form submission
-        const taskForm = document.getElementById('task-form');
-        taskForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const title = document.getElementById('title').value;
-            const description = document.getElementById('description').value;
-
-            try {
-                const response = await fetch(`${apiUrl}/tasks`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${accessToken}`
-                    },
-                    body: JSON.stringify({ task_name: title, description })
-                });
-
-                if (!response.ok) {
-                    throw new Error("Failed to add task");
-                }
-
-                const newTask = await response.json();
-                getUserTasks();  // Refresh the task list
-                showAlert("Task added successfully!");
-            } catch (error) {
-                showAlert("Error adding task.");
-            }
-        });
-
-        // Handle task deletion
-        const deleteTask = async (taskId) => {
-            try {
-                const response = await fetch(`${apiUrl}/tasks/${taskId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch access token');
                     }
-                });
 
-                if (!response.ok) {
-                    throw new Error("Failed to delete task");
+                    const data = await response.json();
+                    const accessToken = data.access_token;
+                    const id_token = data.id_token;
+
+                    localStorage.setItem('access_token', accessToken);
+                    localStorage.setItem('id_token', id_token);
+                    localStorage.setItem('refresh_token', data.refresh_token);
+
+                    return id_token;
+                } catch (error) {
+                    console.error('Error fetching access token:', error);
+                    alert('Authentication failed. Redirecting to login...');
+                    window.location.href = 'YOUR_COGNITO_HOSTED_UI_URL';
                 }
-
-                getUserTasks();  // Refresh the task list
-                showAlert("Task deleted successfully!");
-            } catch (error) {
-                showAlert("Error deleting task.");
             }
-        };
 
-        // Logout functionality
-        const logout = () => {
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('id_token');
-            localStorage.removeItem('refresh_token');
-            window.location.href = 'index.html'; // Redirect to login page
-        };
+            async function fetchTasks(id_token) {
+                try {
+                    const response = await fetch('YOUR_API_GET_TASKS_URL', {
+                        method: 'GET',
+                        headers: {
+                            Authorization: `Bearer ${id_token}`,
+                        },
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        const taskList = document.getElementById('task-list');
+                        taskList.innerHTML = ''; // Clear existing tasks
+
+                        data.tasks.forEach((task) => {
+                            const li = document.createElement('li');
+                            li.className = 'task-item';
+                            li.textContent = task.task_name;
+
+                            // Create delete button
+                            const deleteBtn = document.createElement('button');
+                            deleteBtn.className = 'delete-btn';
+                            deleteBtn.textContent = 'Delete';
+                            deleteBtn.onclick = async () => {
+                                try {
+                                    const response = await fetch(`YOUR_API_DELETE_TASK_URL/${task.task_id}`, {
+                                        method: 'DELETE',
+                                        headers: {
+                                            'Authorization': `Bearer ${id_token}`,
+                                        },
+                                    });
+
+                                    if (response.ok) {
+                                        alert('Task deleted successfully!');
+                                        fetchTasks(id_token); 
+                                    } else {
+                                        alert('Failed to delete task');
+                                    }
+                                } catch (error) {
+                                    console.error('Error deleting task:', error);
+                                }
+                            };
+
+                            li.appendChild(deleteBtn);
+                            taskList.appendChild(li);
+                        });
+                    } else {
+                        console.error('Failed to fetch tasks:', response.status);
+                    }
+                } catch (error) {
+                    console.error('Error fetching tasks:', error);
+                }
+            }
+
+            document.getElementById('add-task-btn').addEventListener('click', async () => {
+                const taskName = prompt('Enter the task name:');
+                if (taskName) {
+                    const id_token = localStorage.getItem('id_token');
+
+                    if (!id_token) {
+                        alert('You need to authenticate first.');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('YOUR_API_ADD_TASK_URL', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${id_token}`,
+                            },
+                            body: JSON.stringify({ task_name: taskName }),
+                        });
+
+                        if (response.ok) {
+                            alert('Task created successfully!');
+                            fetchTasks(id_token);
+                        } else {
+                            alert('Failed to create task');
+                        }
+                    } catch (error) {
+                        console.error('Error adding task:', error);
+                    }
+                }
+            });
+
+            // Logout Button
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                // Clear the local storage and redirect to the index page
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('id_token');
+                localStorage.removeItem('refresh_token');
+                // Replace with your logout redirect URL
+                window.location.href = 'YOUR_LOGOUT_REDIRECT_URL';
+            });
+
+            (async () => {
+                const id_token = localStorage.getItem('id_token');
+                if (id_token) {
+                    fetchTasks(id_token);
+                } else {
+                    const newId_token = await fetchAccessToken(authCode);
+                    if (newId_token) {
+                        fetchTasks(newId_token);
+                    }
+                }
+            })();
+        });
     </script>
 </body>
 </html>
