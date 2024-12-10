@@ -276,13 +276,13 @@ Click new stage and name your API Stage
 
 Under Stages you should have an invoke url
 
-Save this somewhere
+Save this somewhere as you will be using it later 
 
 Open index.html in an Cloud9
 
 Add your AWS Cognito Hosted Login URL under where it says link to AWS Cognito login in the quotes
 
-Save change
+Save the changes
 
 Put updated index into S3 bucket
 
@@ -296,7 +296,7 @@ On line 109 your redirect_uri is your object url for your task manager
 
 On line 110 add your client id from your Cognito app client
 
-On line 133 for your cognito hosted ui url add the same on that you did in the index.html
+On line 133 for your cognito hosted ui url add the same way but in the index.html
 
 On line 139 add your API gateway invoke url from stages
 
