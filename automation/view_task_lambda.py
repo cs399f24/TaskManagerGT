@@ -1,49 +1,27 @@
 import json
 import boto3
-from botocore.exceptions import ClientError
+from boto3.dynamodb.conditions import Key
 
-# Initialize DynamoDB client
-dynamodb = boto3.client('dynamodb')
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('TasksTable')
 
 def lambda_handler(event, context):
-    user_id = event.get('user_id')  # User ID passed in the event
+    # Extract the user ID from the Cognito JWT token (from API Gateway context)
+    user_id = event['requestContext']['authorizer']['claims']['sub']
     
-    if not user_id:
-        return {
-            'statusCode': 400,
-            'body': json.dumps('User ID is required')
-        }
+    # Query DynamoDB to get the tasks for this user
+    response = table.query(
+        KeyConditionExpression=Key('user_id').eq(user_id)
+    )
     
-    # Query DynamoDB for tasks associated with the user
-    try:
-        response = dynamodb.query(
-            TableName='Tasks',
-            KeyConditionExpression='UserId = :user_id',
-            ExpressionAttributeValues={
-                ':user_id': {'S': user_id}
-            }
-        )
-        
-        tasks = response.get('Items', [])
-        
-        # Prepare the response format
-        task_list = []
-        for task in tasks:
-            task_list.append({
-                'TaskId': task['TaskId']['S'],
-                'TaskName': task['TaskName']['S'],
-                'Status': task['Status']['S'],
-                'DueDate': task['DueDate']['S'],
-                'Priority': task.get('Priority', {}).get('S', 'Not set')
-            })
-        
-        return {
-            'statusCode': 200,
-            'body': json.dumps({'tasks': task_list})
-        }
-
-    except ClientError as e:
-        return {
-            'statusCode': 500,
-            'body': json.dumps(f"Error retrieving tasks: {e.response['Error']['Message']}")
-        }
+    tasks = response.get('Items', [])
+    return {
+        'statusCode': 200,
+        'headers': {
+            'Access-Control-Allow-Origin': '*',  # Allow all origins or specify your domain
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',  # Allowed methods
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',  # Allowed headers
+            'Content-Type': 'application/json'
+        },
+        'body': json.dumps({'tasks': tasks})
+    }
