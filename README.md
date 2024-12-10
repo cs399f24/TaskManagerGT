@@ -17,7 +17,7 @@ Uncheck Block Public Access settings for this bucket and acknowledgement box
 
 Change bucket policy - the bucket policy in our texts
 
-Upload templates without links in s3
+Upload the index.html and the task-manager.html files from the templates folder without links in s3
 
 Open the aws amplify page
 
