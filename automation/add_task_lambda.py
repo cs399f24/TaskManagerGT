@@ -1,50 +1,72 @@
 import json
 import boto3
-from botocore.exceptions import ClientError
+from uuid import uuid4
+from datetime import datetime
 
-# Initialize the DynamoDB resource and table
 dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table('Tasks')  # Replace with your DynamoDB table name
+table = dynamodb.Table('TasksTable')
 
 def lambda_handler(event, context):
-    """
-    Lambda function to add a new task to DynamoDB.
-    """
     try:
-        # Parse the incoming event (assuming it's passed as JSON in the event body)
-        body = json.loads(event['body'])
-        user_id = body['userId']
-        task_name = body['taskName']
+        # Log the entire event for debugging purposes
+        print("Received event: ", json.dumps(event))  # This will help you inspect the event object
+        
+        # Log Authorization header to see if the token is being passed correctly
+        authorization_header = event['headers'].get('Authorization', 'No Authorization Header')
+        print("Authorization Header: ", authorization_header)
 
-        # Check if userId and taskName are provided
-        if not user_id or not task_name:
+        # Extract user ID from the token
+        if 'requestContext' in event and 'authorizer' in event['requestContext']:
+            user_id = event['requestContext']['authorizer']['claims']['sub']
+        else:
             return {
-                'statusCode': 400,
-                'body': json.dumps({'message': 'userId and taskName are required'})
+                'statusCode': 401,
+                'body': json.dumps({'message': 'Unauthorized', 'error': 'No authorizer found in the request'})
             }
 
-        # Add the task to DynamoDB
-        response = table.put_item(
+        # Get task details from the request body
+        body = json.loads(event['body'])
+        task_name = body.get('task_name')
+
+        if not task_name:
+            return {
+                'statusCode': 400,
+                'body': json.dumps({'message': 'task_name is required'})
+            }
+
+        # Generate a new task ID and current timestamp
+        task_id = str(uuid4())
+        created_at = datetime.utcnow().isoformat()
+
+        # Insert new task into DynamoDB
+        table.put_item(
             Item={
-                'userId': user_id,
-                'taskName': task_name
+                'user_id': user_id,
+                'task_id': task_id,
+                'task_name': task_name,
+                'created_at': created_at
             }
         )
 
         return {
             'statusCode': 200,
-            'body': json.dumps({'message': 'Task added successfully', 'task': body})
+            'headers': {
+                'Access-Control-Allow-Origin': '*',  # Allow all origins or specify your domain
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',  # Allowed methods
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization',  # Allowed headers
+                'Content-Type': 'application/json'
+            },
+            'body': json.dumps({'message': 'Task created successfully', 'task_id': task_id})
         }
 
-    except ClientError as e:
-        # Handle any errors that occur during the DynamoDB operation
-        return {
-            'statusCode': 500,
-            'body': json.dumps({'message': f"Error adding task: {str(e)}"})
-        }
     except Exception as e:
-        # Handle general exceptions
         return {
             'statusCode': 500,
-            'body': json.dumps({'message': f"Error: {str(e)}"})
+            'headers': {
+                'Access-Control-Allow-Origin': '*',  # Allow all origins or specify your domain
+                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',  # Allowed methods
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization',  # Allowed headers
+                'Content-Type': 'application/json'
+            },
+            'body': json.dumps({'message': 'Failed to create task', 'error': str(e)})
         }
