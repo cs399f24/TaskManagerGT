@@ -10,7 +10,7 @@ if [ ! -f "$LAMBDA_PYTHON_FILE" ]; then
 fi
 
 # Make sure the function does not already exist
-if aws lambda get-function --function-name addTaskFunction >/dev/null 2>&1; then
+if aws lambda get-function --function-name CreateTask >/dev/null 2>&1; then
     echo "Function already exists"
     exit 1
 fi    
@@ -22,17 +22,17 @@ ROLE=$(aws iam get-role --role-name labRole --query "Role.Arn" --output text)
 zip add_task_lambda.zip "$LAMBDA_PYTHON_FILE"
 
 # Create the Add Task Lambda function
-aws lambda create-function --function-name addTaskFunction \
+aws lambda create-function --function-name CreateTask \
   --runtime python3.9 \
   --role $ROLE \
   --zip-file fileb://add_task_lambda.zip \
   --handler add_task_lambda.lambda_handler
 
 # Wait for the function to be created and active (starts as "Pending")
-aws lambda wait function-active --function-name addTaskFunction  
+aws lambda wait function-active --function-name CreateTask  
 
 # Publish a version of the function
-aws lambda publish-version --function-name addTaskFunction
+aws lambda publish-version --function-name CreateTask
 
 echo "Add Task Lambda function created and version published."
 
