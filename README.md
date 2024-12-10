@@ -2,11 +2,13 @@
 <img width="791" alt="Screenshot 2024-12-10 at 1 25 57 PM" src="https://github.com/user-attachments/assets/faed544c-42cc-40cb-a20f-74aaf1115709">
 
 
-
 # TaskManagerGT
-Task manager for CSCI399
+
+# Project Description
+A Task Manager website that offers a seamless experience for users to sign up or log in securely. Each user has access to their own private task list, ensuring personalized task management. The website allows you to effortlessly create an unlimited number of tasks and delete them as needed, making it a simple and efficient tool to stay organized.
 
 Steps:
+
 Clone the repository
 
 Go to the aws console, and open the s3 page
