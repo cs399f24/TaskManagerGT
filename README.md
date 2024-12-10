@@ -58,7 +58,7 @@ Click change default execution role
 Use the existing role LabRole
 
 copy and paste the following code under source code then hit deploy:
-
+```
 import json
 import boto3
 from boto3.dynamodb.conditions import Key
@@ -86,9 +86,11 @@ def lambda_handler(event, context):
         },
         'body': json.dumps({'tasks': tasks})
     }
+```
 
 Do the same and name it DeleteTask:
 
+```
 import json
 import boto3
 
@@ -120,9 +122,11 @@ def lambda_handler(event, context):
         },
         'body': json.dumps({'message': 'Task deleted successfully'})
     }
+```
 
 Do the same and name it CreateTask:
 
+```
 import json
 import boto3
 from uuid import uuid4
@@ -195,6 +199,7 @@ def lambda_handler(event, context):
             },
             'body': json.dumps({'message': 'Failed to create task', 'error': str(e)})
         }
+```
 
 Import all the lambda functions
 
