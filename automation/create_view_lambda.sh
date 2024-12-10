@@ -10,7 +10,7 @@ if [ ! -f "$LAMBDA_PYTHON_FILE" ]; then
 fi
 
 # Make sure the function does not already exist
-if aws lambda get-function --function-name viewTaskFunction >/dev/null 2>&1; then
+if aws lambda get-function --function-name GetTasks >/dev/null 2>&1; then
     echo "Function already exists"
     exit 1
 fi    
@@ -22,17 +22,17 @@ ROLE=$(aws iam get-role --role-name labRole --query "Role.Arn" --output text)
 zip view_task_lambda.zip "$LAMBDA_PYTHON_FILE"
 
 # Create the View Task Lambda function
-aws lambda create-function --function-name viewTaskFunction \
+aws lambda create-function --function-name GetTasks \
   --runtime python3.9 \
   --role $ROLE \
   --zip-file fileb://view_task_lambda.zip \
   --handler view_task_lambda.lambda_handler
 
 # Wait for the function to be created and active (starts as "Pending")
-aws lambda wait function-active --function-name viewTaskFunction  
+aws lambda wait function-active --function-name GetTasks  
 
 # Publish a version of the function
-aws lambda publish-version --function-name viewTaskFunction
+aws lambda publish-version --function-name GetTasks
 
-echo "View Task Lambda function created and version published."
+echo "GetTasks Lambda function created and version published."
 
