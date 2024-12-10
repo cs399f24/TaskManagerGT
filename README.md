@@ -9,7 +9,9 @@ Task manager for CSCI399
 Steps:
 Clone the repository
 
-Create S3 Bucket
+Go to the aws console, and open the s3 page
+
+Create the s3 bucket
 
 Uncheck Block Public Access settings for this bucket and acknowledgement box
 
@@ -17,13 +19,13 @@ Change bucket policy - the bucket policy in our texts
 
 Upload templates without links in s3
 
-Go to amplify
+Open the aws amplify page
 
 Create new app
 
 Deploy without git 
 
-Next
+click next
 
 Choose s3
 
@@ -200,8 +202,6 @@ def lambda_handler(event, context):
             'body': json.dumps({'message': 'Failed to create task', 'error': str(e)})
         }
 ```
-
-Import all the lambda functions
 
 Go back to API gateway and attach functions
 
